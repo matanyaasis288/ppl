@@ -13,7 +13,7 @@ export const mapMat =
 
 /* Question 3 */
 export const composeMany = 
-    function composeMany<T> (functionsArray : Array<(x : T) => T>){
+    function composeMany<T> (functionsArray : Array<(x : T) => T>) : (x : T) => T{
         return functionsArray.reduce((acc, curr) => (x => acc(curr(x))) , x => x)
     }
 
@@ -41,10 +41,34 @@ interface Pokemon {
     base: Stats;
 }
 
-export const maxSpeed = undefined;
+export const maxSpeed = 
+    function maxSpeed (pokedex : Pokemon[]) : Pokemon[]{
+        return pokedex.filter((pokemon) => 
+               pokemon.base.Speed === pokedex.reduce((acc, curr) => Math.max(acc, curr.base.Speed), 0))
+    }
 
-export const grassTypes = undefined;
+export const grassTypes = 
+    function grassTypes (pokedex : Pokemon[]) : string[]{
+        return pokedex
+            .filter((pokemon) => pokemon.type.filter(x => x == 'Grass').length > 0)
+            .sort((a ,b) => a.name.english > b.name.english ? 1 :
+                            b.name.english > a.name.english ? -1 :
+                            0
+            )
+            .map(x => x.name.english)
+    }
 
-export const uniqueTypes = undefined;
+export const uniqueTypes = 
+    function uniqueTypes (pokedex : Pokemon[]) : string[]{
+        return pokedex
+            .map(x => x.type)
+            .reduce((acc, curr) => acc.concat(curr), [])
+            .map(x => [x])
+            .reduce((acc, curr) => acc.indexOf(curr[0]) == -1 ? curr.concat(acc) : acc , [])
+            .sort((a ,b) => a > b ? 1 :
+                            b > a ? -1 :
+                            0
+            )
+    }
 
 
