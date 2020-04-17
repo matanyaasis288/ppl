@@ -1,15 +1,37 @@
 /* Question 3 */
 
-export type Result<T> = undefined;
+export interface Ok<T>{
+    tag: 'Ok',
+    value: T
+}
 
-export const makeOk = undefined;
-export const makeFailure = undefined;
+export interface Failure{
+    tag: 'Failure',
+    message: string
+}
 
-export const isOk = undefined;
-export const isFailure = undefined;
+export type Result<T> = Ok<T> | Failure;
+
+export const makeOk : <T>(value: T) => Ok<T> =
+    <T>(value: T) : Ok<T> =>
+        ({tag: 'Ok', value: value});
+
+export const makeFailure : (msg : string) => Failure =
+    (msg : string) : Failure =>
+        ({tag: 'Failure', message : msg});
+
+export const isOk : <T>(result : Result<T>) => result is Ok<T> = 
+    <T>(result : Result<T>) : result is Ok<T> =>
+        result.tag === 'Ok';
+
+export const isFailure : <T>(result : Result<T>) => result is Failure = 
+    <T>(result : Result<T>) : result is Failure =>
+        result.tag === 'Failure';
 
 /* Question 4 */
-export const bind = undefined;
+export const bind : <T, U>(result : Result<T>, f: (x: T) => Result<U>) => Result<U> = 
+    <T, U>(result: Result<T>, f: (x: T) => Result<U>) : Result<U> =>
+        isOk(result) ? f(result.value) : result;
 
 /* Question 5 */
 interface User {
@@ -33,6 +55,15 @@ const validateHandle = (user: User): Result<User> =>
     user.handle.startsWith("@") ? makeFailure("This isn't Twitter") :
     makeOk(user);
 
-export const naiveValidateUser = undefined;
+export const naiveValidateUser : (user : User) => Result<User> =
+    (user : User) : Result<User> =>
+        isFailure(validateName(user)) ? validateName(user) :
+        isFailure(validateEmail(user)) ? validateEmail(user) :
+        isFailure(validateHandle(user)) ? validateHandle(user) : 
+        makeOk(user);
 
-export const monadicValidateUser = undefined;
+export const monadicValidateUser : (user : User) => Result<User> =
+    (user : User) : Result<User> =>
+        [validateName, validateEmail, validateHandle]
+        .reduce((acc : Result<User>, curr : ((user: User) => Result<User>)) =>
+            bind<User,User>(acc, curr), makeOk<User>(user));
